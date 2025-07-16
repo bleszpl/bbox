@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Extracting File Names</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        background-color: #f9f9f9;
+      }
+      textarea {
+        width: 100%;
+        height: 150px;
+        margin-bottom: 20px;
+        padding: 10px;
+        font-family: monospace;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+      pre {
+        background-color: #eee;
+        padding: 10px;
+        white-space: pre-wrap;
+        border-radius: 6px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Extract file names after "File Name:"</h2>
+
+    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <br />
+    <button onclick="processText()">Extract file names</button>
+    <button onclick="downloadResult()">Download as .txt</button>
+
+    <h3>Result:</h3>
+    <pre id="output"></pre>
+
+    <script>
+      let latestResult = ""
+
+      function cleanHTML(str) {
+        return str
+          .replace(/<[^>]*>/g, "") // removes all HTML tags
+          .replace(/&[^;\s]+;/g, "") // removes HTML entities like &nbsp;
+          .trim()
+      }
+
+      function extractFileNames(text) {
+        const matches = [
+          ...text.matchAll(
+            /File Name:\s*((.|\n)*?)(?=\n|Date Uploaded:|File Name:|$)/gi
+          ),
+        ]
+        return matches
+          .map(match => cleanHTML(match[1]))
+          .filter(name => name !== "")
+      }
+
+      function processText() {
+        const input = document.getElementById("inputText").value
+        const resultArray = extractFileNames(input)
+        latestResult = resultArray.join("\n") || "No matches found."
+        document.getElementById("output").textContent = latestResult
+      }
+
+      function downloadResult() {
+        if (!latestResult) {
+          alert("First extract the data by clicking 'Extract file names'.")
+          return
+        }
+
+        const blob = new Blob([latestResult], { type: "text/plain" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = "file_names.txt"
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    </script>
+  </body>
+</html>
